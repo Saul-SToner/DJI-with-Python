@@ -11,6 +11,7 @@ from zospy.analyses.mtf import FFTMTF
 
 from analysis_debug import update_analysis_debug
 from run_files import run_file, run_id_from_file
+from zosapi_cleanup import close_all_analysis_windows
 
 
 def _warnings_path(output_path: Path) -> Path:
@@ -29,11 +30,29 @@ def _fft_mtf_analysis() -> FFTMTF:
         surface="Image",
         wavelength="All",
         field="All",
-        maximum_frequency=0.0,
+        # Keep the exported FFT MTF curve dense and bounded. OpticStudio's default
+        # maximum can return sparse/adaptive samples that flatten narrow tangential
+        # notches to exact zero around 25-30 lp/mm. The diagnostic script confirmed
+        # that a bounded 0-80 lp/mm curve does not show a true zero crossing.
+        maximum_frequency=80.0,
         use_polarization=False,
         use_dashes=False,
         show_diffraction_limit=False,
     )
+
+
+def _analysis_messages(analysis: Any) -> list[str]:
+    try:
+        return [f"{message.ErrorCode}: {message.Message}" for message in analysis.analysis.messages]
+    except Exception:
+        return []
+
+
+def _analysis_header(analysis: Any) -> list[str]:
+    try:
+        return list(analysis.analysis.header_data)
+    except Exception:
+        return []
 
 
 def _run_fft_mtf_data_only(oss: Any, output_path: Path) -> DataFrame | None:
@@ -55,6 +74,8 @@ def _run_fft_mtf_data_only(oss: Any, output_path: Path) -> DataFrame | None:
         try:
             data = analysis.run_analysis()
             debug["fftmtf_analysis_ran"] = True
+            debug["fftmtf_messages"] = _analysis_messages(analysis)
+            debug["fftmtf_header"] = _analysis_header(analysis)
         except Exception as exc:
             debug["fftmtf_error_message"] = f"FFTMTF analysis run failed: {type(exc).__name__}: {exc!r}"
             _append_warning(output_path, debug["fftmtf_error_message"])
@@ -65,6 +86,10 @@ def _run_fft_mtf_data_only(oss: Any, output_path: Path) -> DataFrame | None:
             debug["fftmtf_has_results"] = results is not None
             debug["fftmtf_num_datagrids"] = getattr(results, "NumberOfDataGrids", None)
             debug["fftmtf_num_dataseries"] = getattr(results, "NumberOfDataSeries", None)
+            if results is not None and getattr(results, "NumberOfDataSeries", 0) == 0:
+                _append_warning(output_path, "FFTMTF DataSeries empty.")
+            if results is not None and getattr(results, "NumberOfDataGrids", 0) == 0:
+                _append_warning(output_path, "FFTMTF DataGrids empty.")
         except Exception as exc:
             debug["fftmtf_has_results"] = False
             debug["fftmtf_error_message"] = f"FFTMTF GetResults failed: {type(exc).__name__}: {exc!r}"
@@ -85,6 +110,7 @@ def _run_fft_mtf_data_only(oss: Any, output_path: Path) -> DataFrame | None:
             analysis._complete(OnComplete.Close)
         except Exception:
             pass
+        close_all_analysis_windows(oss)
 
 
 def export_mtf(oss: Any, output_path: Path, run_metadata: dict[str, Any] | None = None) -> bool:
@@ -106,7 +132,9 @@ def export_mtf(oss: Any, output_path: Path, run_metadata: dict[str, Any] | None 
         debug["fftmtf_analysis_ran"] = True
         debug["fftmtf_has_results"] = True
         data = result.data
+        close_all_analysis_windows(oss)
     except AttributeError as exc:
+        close_all_analysis_windows(oss)
         message = str(exc)
         if "metadata" not in message:
             debug["fftmtf_error_message"] = (
@@ -125,6 +153,7 @@ def export_mtf(oss: Any, output_path: Path, run_metadata: dict[str, Any] | None 
         update_analysis_debug(output_path.parent, run_id, debug)
         data = _run_fft_mtf_data_only(oss, output_path)
     except Exception as exc:
+        close_all_analysis_windows(oss)
         debug["fftmtf_error_message"] = f"FFTMTF analysis run failed: {type(exc).__name__}: {exc!r}"
         _append_warning(output_path, debug["fftmtf_error_message"])
         update_analysis_debug(output_path.parent, run_id, debug)
@@ -132,21 +161,21 @@ def export_mtf(oss: Any, output_path: Path, run_metadata: dict[str, Any] | None 
 
     try:
         if data is None:
-            debug["fftmtf_error_message"] = "FFTMTF DataFrame extraction failed: returned no data."
-            _append_warning(output_path, debug["fftmtf_error_message"])
-            update_analysis_debug(output_path.parent, run_id, debug)
+            message = "FFTMTF DataFrame extraction failed: returned no data."
+            _append_warning(output_path, message)
+            update_analysis_debug(output_path.parent, run_id, {"fftmtf_dataframe_success": False, "fftmtf_error_message": message})
             return False
 
         if not isinstance(data, DataFrame):
-            debug["fftmtf_error_message"] = f"FFTMTF DataFrame extraction failed: unexpected data type {type(data).__name__}."
-            _append_warning(output_path, debug["fftmtf_error_message"])
-            update_analysis_debug(output_path.parent, run_id, debug)
+            message = f"FFTMTF DataFrame extraction failed: unexpected data type {type(data).__name__}."
+            _append_warning(output_path, message)
+            update_analysis_debug(output_path.parent, run_id, {"fftmtf_dataframe_success": False, "fftmtf_error_message": message})
             return False
 
         if data.empty:
-            debug["fftmtf_error_message"] = "FFTMTF DataFrame extraction failed: empty DataFrame."
-            _append_warning(output_path, debug["fftmtf_error_message"])
-            update_analysis_debug(output_path.parent, run_id, debug)
+            message = "FFTMTF DataFrame extraction failed: empty DataFrame."
+            _append_warning(output_path, message)
+            update_analysis_debug(output_path.parent, run_id, {"fftmtf_dataframe_success": False, "fftmtf_error_message": message})
             return False
 
         debug["fftmtf_dataframe_success"] = True

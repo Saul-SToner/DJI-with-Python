@@ -1,108 +1,127 @@
 # DJI Zemax Checker
 
-This project uses Python, ZOSPy, and the OpticStudio ZOS-API to inspect the lens file currently open in Ansys Zemax OpticStudio.
+Python utilities for inspecting and batch-checking Ansys Zemax OpticStudio sequential lens files through ZOSPy and the ZOS-API.
 
-The first stage only connects to OpticStudio in extension mode and exports basic Lens Data Editor surface data plus lightweight summary checks to `results/YYYYMMDD_HHMMSS/`.
+The project is designed for a local Windows OpticStudio workflow. It exports repeatable CSV/JSON/TXT summaries, runs conservative parameter scans, and provides mechanical/geometry diagnostics for ultra-wide-angle lens development.
 
 ## Requirements
 
 - Windows 10 or Windows 11
-- Ansys Zemax OpticStudio installed and licensed
+- Ansys Zemax OpticStudio installed and licensed for ZOS-API
 - Python 3.10 to 3.13
 - PowerShell
 
-Python 3.11 or 3.12 is a conservative choice. Python 3.13 is also supported by current ZOSPy releases.
+Python 3.11 or 3.12 is recommended for a conservative local setup.
 
-## Create The Project Environment
-
-Open PowerShell and run:
+## Setup
 
 ```powershell
 cd C:\ZemaxAuto\dji_zemax_checker
-py -3.13 -m venv .venv
+py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-If PowerShell blocks venv activation, run:
+If PowerShell blocks virtual environment activation:
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 .\.venv\Scripts\Activate.ps1
 ```
 
-## Start OpticStudio Interactive Extension
+## OpticStudio Connection
 
-1. Open Ansys Zemax OpticStudio.
+Most scripts use ZOSPy extension mode.
+
+1. Open OpticStudio.
 2. Open the lens file you want to inspect.
-3. In OpticStudio, choose `Programming > Interactive Extension`.
-4. Keep the Interactive Extension window open while the Python script runs.
+3. Start `Programming > Interactive Extension`.
+4. Keep that dialog open while Python runs.
 
-The scripts use ZOSPy extension mode, which connects to an already running OpticStudio instance.
-
-## Test The Connection
-
-With the venv active:
+Test the connection:
 
 ```powershell
 python .\src\connect_test.py
 ```
 
-Expected result:
+If connection fails, confirm OpticStudio is open, the lens is loaded, Interactive Extension is active, and the Python process is running in native Windows PowerShell rather than WSL.
 
-```text
-Initializing ZOSPy...
-Connecting to OpticStudio in extension mode...
-Connected.
-Number of surfaces: ...
-```
+## Common Commands
 
-## Export Surface Data
-
-With OpticStudio open and Interactive Extension active:
+Export the current lens summary:
 
 ```powershell
-python .\src\main.py
+python -u .\src\main.py
 ```
 
-The output is written to:
-
-```text
-results/YYYYMMDD_HHMMSS/
-  surfaces.csv
-  system_summary.json
-  manufacturing_check.json
-```
-
-The CSV columns are:
-
-- `surface_index`
-- `comment`
-- `radius`
-- `thickness`
-- `material`
-- `semi_diameter`
-- `conic`
-
-If an individual field cannot be read from ZOS-API, the script writes an empty value for that field and continues.
-
-`system_summary.json` contains system metadata, aperture data, fields, wavelengths, and calculated optical summary fields when the ZOSPy System Data report can be parsed.
-
-`manufacturing_check.json` currently checks L5 by comment label and reports center thickness, approximate edge thickness, minimum absolute radius, and edge thinning risk.
-
-## Scope
-
-This first stage does not run the optimizer, does not modify the lens file, and does not export MTF or manufacturing checks.
-
-## Codex CLI
-
-Install Node.js for Windows first, then open a new PowerShell window and run:
+Close analysis windows if OpticStudio becomes cluttered:
 
 ```powershell
-npm i -g @openai/codex
-cd C:\ZemaxAuto\dji_zemax_checker
-codex
+python -u .\src\close_all_analysis_windows.py
 ```
 
-On this machine, `node` and `codex` currently resolve to the Codex desktop app package under `C:\Program Files\WindowsApps`, and PowerShell cannot execute those binaries directly. Install the standalone Node.js LTS build so `npm` is available on PATH before installing Codex CLI.
+Run a read-only overlap diagnostic:
+
+```powershell
+python -u .\src\diagnose_lens_overlap.py --lens "C:\Users\L2791\OneDrive\Desktop\3.2.ZOS"
+```
+
+Run a dry-run repair helper without saving:
+
+```powershell
+python -u .\src\apply_s4_s5_adaptive_gap_fix.py --lens "C:\Users\L2791\OneDrive\Desktop\3.2.ZOS"
+```
+
+Apply scripts save only when explicitly passed `--apply`.
+
+## Project Layout
+
+```text
+src/
+  export_*.py                 Export helpers for surfaces, MTF, system data, summaries
+  scan_*.py                   Conservative parameter scan scripts
+  diagnose_*.py               Read-only diagnostic scripts
+  apply_*.py                  Limited repair scripts, dry-run by default
+  zosapi_cleanup.py           Analysis-window cleanup helper
+
+tools/
+  run_scan_and_report.ps1     PowerShell scan/report wrapper
+
+results/
+scan_runs/
+logs/
+reports/
+stage_runs/
+  Generated local outputs; ignored by Git
+```
+
+## Safety Notes
+
+- Diagnostic scripts are intended to be read-only.
+- Repair scripts default to dry-run and require `--apply` before saving.
+- Scan scripts should copy or generate scan files under `scan_runs/` and write outputs under `results/`.
+- The optimizer and Hammer should not be called unless a script explicitly documents that behavior.
+- Generated Zemax files, result folders, logs, reports, and local material-library exports are ignored by Git.
+
+## GitHub Upload Notes
+
+Before publishing, verify that no private lens files, competition attachment files, generated reports, or scan results are staged:
+
+```powershell
+git status --short
+git ls-files results scan_runs logs reports stage_runs
+```
+
+If generated files were previously tracked, remove them from the Git index without deleting local files:
+
+```powershell
+git rm --cached -r --ignore-unmatch results scan_runs logs reports stage_runs
+git rm --cached --ignore-unmatch allowed_materials_from_DJI_library.csv
+```
+
+Then run a syntax check:
+
+```powershell
+python -m compileall src
+```

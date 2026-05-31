@@ -158,6 +158,31 @@ def _mtf_values(path: Path) -> dict[str, Any]:
         values[f"mtf{int(target)}_min"] = min(target_values) if target_values else None
         values[f"mtf{int(target)}_mean"] = sum(target_values) / len(target_values) if target_values else None
 
+    warnings: list[str] = []
+    for item in real_series:
+        field = item.get("field")
+        orientation = item.get("orientation")
+        if field is None or abs(field - 25.0) > 1e-6 or orientation not in {"T", "S"}:
+            continue
+
+        curve_points = [
+            value
+            for frequency, value in zip(frequencies, item["values"], strict=False)
+            if value is not None and 20.0 <= frequency <= 50.0
+        ]
+        if not curve_points:
+            continue
+        curve_min = min(curve_points)
+        for target in (25.0, 30.0):
+            key = f"mtf_25_{orientation.lower()}_{int(target)}"
+            point = values.get(key)
+            if point is not None and abs(point) <= 1e-12 and curve_min > 0.005:
+                warnings.append(
+                    f"{key} is zero but full 25{orientation} curve min(20-50)={curve_min:.6g}; "
+                    "summary extraction may be inconsistent."
+                )
+
+    values["summary_extraction_warning"] = " | ".join(warnings) if warnings else None
     return values
 
 
@@ -272,6 +297,12 @@ def export_chatgpt_summary(run_dir: Path, run_id: str, output_path: Path | None 
     scanned_surface_comment = metadata.get("scanned_surface_comment")
     scanned_radius = metadata.get("scanned_radius")
     scanned_thickness = metadata.get("scanned_thickness")
+    scanned_conic = metadata.get("scanned_conic")
+    image_shift = metadata.get("image_shift")
+    original_image_thickness = metadata.get("original_image_thickness")
+    new_image_thickness = metadata.get("new_image_thickness")
+    scanned_coefficient = metadata.get("scanned_coefficient")
+    scanned_value = metadata.get("scanned_value")
     scanned_surface_a = metadata.get("scanned_surface_a")
     scanned_surface_comment_a = metadata.get("scanned_surface_comment_a")
     scanned_radius_a = metadata.get("scanned_radius_a")
@@ -280,6 +311,8 @@ def export_chatgpt_summary(run_dir: Path, run_id: str, output_path: Path | None 
     scanned_radius_b = metadata.get("scanned_radius_b")
     scanned_material = metadata.get("scanned_material")
     material_catalog = metadata.get("material_catalog")
+    requested_glass_catalog_name = metadata.get("requested_glass_catalog_name")
+    requested_glass_catalog_path = metadata.get("requested_glass_catalog_path")
     material_nd = metadata.get("material_nd")
     material_vd = metadata.get("material_vd")
     requested_material = metadata.get("requested_material")
@@ -293,6 +326,7 @@ def export_chatgpt_summary(run_dir: Path, run_id: str, output_path: Path | None 
     material_validation_warning = metadata.get("material_validation_warning")
     is_material_resolved = metadata.get("is_material_resolved")
     material_set_success = metadata.get("material_set_success")
+    failure_reason = metadata.get("failure_reason")
     base_lens = metadata.get("base_lens")
     scan_lens = metadata.get("scan_lens") or metadata.get("scan_copy_file")
     quick_focus = metadata.get("quick_focus")
@@ -328,6 +362,12 @@ def export_chatgpt_summary(run_dir: Path, run_id: str, output_path: Path | None 
         f"scanned_surface_comment: {_fmt(scanned_surface_comment)}",
         f"scanned_radius: {_fmt(scanned_radius)}",
         f"scanned_thickness: {_fmt(scanned_thickness)}",
+        f"scanned_conic: {_fmt(scanned_conic)}",
+        f"image_shift: {_fmt(image_shift)}",
+        f"original_image_thickness: {_fmt(original_image_thickness)}",
+        f"new_image_thickness: {_fmt(new_image_thickness)}",
+        f"scanned_coefficient: {_fmt(scanned_coefficient)}",
+        f"scanned_value: {_fmt(scanned_value)}",
         f"scanned_surface_a: {_fmt(scanned_surface_a)}",
         f"scanned_surface_comment_a: {_fmt(scanned_surface_comment_a)}",
         f"scanned_radius_a: {_fmt(scanned_radius_a)}",
@@ -336,6 +376,8 @@ def export_chatgpt_summary(run_dir: Path, run_id: str, output_path: Path | None 
         f"scanned_radius_b: {_fmt(scanned_radius_b)}",
         f"scanned_material: {_fmt(scanned_material)}",
         f"material_catalog: {_fmt(material_catalog)}",
+        f"requested_glass_catalog_name: {_fmt(requested_glass_catalog_name)}",
+        f"requested_glass_catalog_path: {_fmt(requested_glass_catalog_path)}",
         f"material_nd: {_fmt(material_nd)}",
         f"material_vd: {_fmt(material_vd)}",
         f"requested_material: {_fmt(requested_material)}",
@@ -349,6 +391,7 @@ def export_chatgpt_summary(run_dir: Path, run_id: str, output_path: Path | None 
         f"material_validation_warning: {_fmt(material_validation_warning)}",
         f"is_material_resolved: {_fmt(is_material_resolved)}",
         f"material_set_success: {_fmt(material_set_success)}",
+        f"failure_reason: {_fmt(failure_reason)}",
         f"base_lens: {_fmt(base_lens)}",
         f"scan_lens: {_fmt(scan_lens)}",
         f"quick_focus: {_fmt(bool(quick_focus)) if quick_focus is not None else 'false'}",
@@ -412,6 +455,7 @@ def export_chatgpt_summary(run_dir: Path, run_id: str, output_path: Path | None 
         "",
         "[diagnostics]",
         f"25T_notch_or_broad_collapse: {notch_diagnostic}",
+        f"summary_extraction_warning: {_fmt(mtf.get('summary_extraction_warning'))}",
         "",
         f"structure_status: {structure_status}",
         f"mtf_status: {mtf_status}",

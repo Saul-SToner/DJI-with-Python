@@ -1,5 +1,44 @@
+# Python environments and caches
 .venv/
+venv/
 __pycache__/
 *.py[cod]
-results/*/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# Local environment files
+.env
+.env.*
+*.log
+
+# Generated OpticStudio automation outputs
+results/**
+!results/
 !results/.gitkeep
+logs/**
+reports/**
+scan_runs/**
+stage_runs/**
+
+# Zemax / OpticStudio design, archive, and analysis files
+*.zos
+*.ZOS
+*.zmx
+*.ZMX
+*.zda
+*.ZDA
+*.zar
+*.ZAR
+
+# Local competition/material-library exports
+allowed_materials*.csv
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

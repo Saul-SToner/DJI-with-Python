@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import weakref
@@ -191,6 +192,20 @@ def _write_invalid_raw_marker(raw_path: Path, message: str) -> None:
     )
 
 
+def _analysis_messages(analysis: Any) -> list[str]:
+    try:
+        return [f"{message.ErrorCode}: {message.Message}" for message in analysis.analysis.messages]
+    except Exception:
+        return []
+
+
+def _analysis_header(analysis: Any) -> list[str]:
+    try:
+        return list(analysis.analysis.header_data)
+    except Exception:
+        return []
+
+
 def _empty_optical_summary() -> dict[str, Any]:
     return {
         "effective_focal_length_air": None,
@@ -205,6 +220,129 @@ def _empty_optical_summary() -> dict[str, Any]:
         "bfl": None,
         "ttl": None,
         "f_number": None,
+    }
+
+
+def _first_existing_attr(obj: Any, names: tuple[str, ...]) -> Any:
+    for name in names:
+        value = safe_get(obj, name)
+        if value is not None:
+            return value
+    return None
+
+
+def _candidate_first_order_objects(oss: Any) -> list[Any]:
+    system_data = safe_get(oss, "SystemData")
+    lde = safe_get(oss, "LDE")
+    candidates: list[Any] = []
+    for obj in (system_data, lde, oss):
+        if obj is None:
+            continue
+        candidates.append(obj)
+        for attr in (
+            "FirstOrderData",
+            "FirstOrder",
+            "ParaxialData",
+            "Paraxial",
+            "CardinalPoints",
+            "SystemData",
+        ):
+            child = safe_get(obj, attr)
+            if child is not None:
+                candidates.append(child)
+    return candidates
+
+
+def _direct_numeric(oss: Any, names: tuple[str, ...]) -> float | None:
+    for obj in _candidate_first_order_objects(oss):
+        value = _to_float(_first_existing_attr(obj, names))
+        if value is not None:
+            return value
+    return None
+
+
+def _sum_finite_thicknesses_to_image(oss: Any) -> float | None:
+    lde = safe_get(oss, "LDE")
+    count = safe_get(lde, "NumberOfSurfaces")
+    try:
+        surface_count = int(count)
+    except (TypeError, ValueError):
+        return None
+
+    total = 0.0
+    found = False
+    for index in range(surface_count - 1):
+        try:
+            thickness = _to_float(lde.GetSurfaceAt(index).Thickness)
+        except Exception:
+            thickness = None
+        if thickness is None or not math.isfinite(thickness):
+            continue
+        total += thickness
+        found = True
+    return total if found else None
+
+
+def _last_air_thickness_before_image(oss: Any) -> float | None:
+    lde = safe_get(oss, "LDE")
+    count = safe_get(lde, "NumberOfSurfaces")
+    try:
+        image_surface = int(count) - 1
+    except (TypeError, ValueError):
+        return None
+    if image_surface <= 0:
+        return None
+    try:
+        return _to_float(lde.GetSurfaceAt(image_surface - 1).Thickness)
+    except Exception:
+        return None
+
+
+def _direct_optical_summary(oss: Any) -> dict[str, Any]:
+    aperture = safe_get(safe_get(oss, "SystemData"), "Aperture")
+    aperture_value = _to_float(safe_get(aperture, "ApertureValue"))
+    efl = _direct_numeric(
+        oss,
+        (
+            "EffectiveFocalLength",
+            "EffectiveFocalLengthAir",
+            "EFL",
+            "ParaxialEffectiveFocalLength",
+        ),
+    )
+    bfl = _direct_numeric(oss, ("BackFocalLength", "BFL", "ParaxialBackFocalLength"))
+    ttl = _direct_numeric(oss, ("TotalTrack", "TotalTrackLength", "TTL"))
+    f_number = _direct_numeric(oss, ("ImageSpaceFNum", "ImageSpaceFNumber", "FNumber", "FNum"))
+    working_f_number = _direct_numeric(
+        oss,
+        ("WorkingFNumber", "WorkingFNum", "WorkingF/#", "ParaxialWorkingFNumber"),
+    )
+    entrance_pupil_diameter = _direct_numeric(oss, ("EntrancePupilDiameter", "EPD"))
+
+    if bfl is None:
+        bfl = _last_air_thickness_before_image(oss)
+    if ttl is None:
+        ttl = _sum_finite_thicknesses_to_image(oss)
+    if f_number is None:
+        f_number = aperture_value
+    if working_f_number is None:
+        working_f_number = f_number
+    if entrance_pupil_diameter is None and efl is not None and f_number not in (None, 0):
+        entrance_pupil_diameter = efl / f_number
+
+    return {
+        "effective_focal_length_air": json_safe(efl),
+        "effective_focal_length_image": None,
+        "back_focal_length": json_safe(bfl),
+        "total_track": json_safe(ttl),
+        "image_space_f_number": json_safe(f_number),
+        "paraxial_working_f_number": None,
+        "working_f_number": json_safe(working_f_number),
+        "entrance_pupil_diameter": json_safe(entrance_pupil_diameter),
+        "efl": json_safe(efl),
+        "bfl": json_safe(bfl),
+        "ttl": json_safe(ttl),
+        "f_number": json_safe(f_number),
     }
 
 
@@ -279,8 +417,19 @@ def _analysis_summary(
         "system_analysis_ran": False,
         "system_text_exported": False,
         "system_parser_success": False,
+        "system_direct_fallback_success": False,
         "system_error_message": None,
     }
+
+    def direct_fallback() -> dict[str, Any] | None:
+        fallback = _direct_optical_summary(oss)
+        if any(value is not None for value in fallback.values()):
+            debug_status["system_direct_fallback_success"] = True
+            update_analysis_debug(output_dir, run_id, debug_status)
+            return fallback
+        debug_status["system_direct_fallback_success"] = False
+        update_analysis_debug(output_dir, run_id, debug_status)
+        return None
 
     raw_path.unlink(missing_ok=True)
     system_analysis = None
@@ -305,6 +454,8 @@ def _analysis_summary(
         try:
             system_analysis.analysis.ApplyAndWaitForCompletion()
             debug_status["system_analysis_ran"] = True
+            debug_status["system_messages"] = _analysis_messages(system_analysis)
+            debug_status["system_header"] = _analysis_header(system_analysis)
         except Exception as exc:
             debug_status["system_error_message"] = f"SystemData analysis run failed: {type(exc).__name__}: {exc!r}"
             warnings.append(debug_status["system_error_message"])
@@ -313,6 +464,8 @@ def _analysis_summary(
         try:
             system_analysis.analysis.Results.GetTextFile(str(raw_path))
             debug_status["system_text_exported"] = raw_path.exists() and raw_path.stat().st_size > 0
+            debug_status["system_messages"] = _analysis_messages(system_analysis)
+            debug_status["system_header"] = _analysis_header(system_analysis)
             if not debug_status["system_text_exported"]:
                 debug_status["system_error_message"] = "SystemData text export failed: output file was not created."
                 warnings.append(debug_status["system_error_message"])
@@ -342,7 +495,10 @@ def _analysis_summary(
                 debug_status["system_error_message"] = raw_error
                 _write_invalid_raw_marker(raw_path, raw_error)
                 update_analysis_debug(output_dir, run_id, debug_status)
-                return None, warnings, raw_status
+                fallback = direct_fallback()
+                if fallback is not None:
+                    warnings.append("SystemData direct fallback used after raw lens validation failed.")
+                return fallback, warnings, raw_status
         except Exception as exc:
             debug_status["system_error_message"] = f"SystemData parser failed: {type(exc).__name__}: {exc!r}"
             warnings.append(debug_status["system_error_message"])
@@ -354,8 +510,10 @@ def _analysis_summary(
             raw_path,
             "ERROR: SystemData analysis did not create a raw text file for this run.",
         )
-        update_analysis_debug(output_dir, run_id, debug_status)
-        return None, warnings, raw_status
+        fallback = direct_fallback()
+        if fallback is not None:
+            warnings.append("SystemData direct fallback used after text export failed.")
+        return fallback, warnings, raw_status
 
     if raw_status["system_data_raw_valid"] and raw_text is not None:
         optical_summary = _raw_optical_summary(raw_text)
@@ -367,8 +525,10 @@ def _analysis_summary(
         debug_status["system_error_message"] = "SystemData parser failed: optical_summary parse returned only null fields."
         warnings.append(debug_status["system_error_message"])
 
-    update_analysis_debug(output_dir, run_id, debug_status)
-    return None, warnings, raw_status
+    fallback = direct_fallback()
+    if fallback is not None:
+        warnings.append("SystemData direct fallback used after parser failure.")
+    return fallback, warnings, raw_status
 
 
 def build_system_summary(oss: Any, output_dir: Path, run_metadata: dict[str, Any] | None = None) -> dict[str, Any]:

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
+import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -10,7 +12,13 @@ import zospy as zp
 from zospy.analyses.reports.surface_data import ModelGlass, SurfaceData
 
 from analysis_debug import update_analysis_debug
+from console_summary import print_run_console_summary
+from export_chatgpt_summary import export_chatgpt_summary
+from export_surfaces import export_surfaces
 from export_surfaces import safe_get
+from manufacturing_check import export_manufacturing_check
+from run_files import run_file
+from run_metadata import export_run_metadata, load_run_metadata
 from scan_radius import (
     _append_warning,
     _export_current_point,
@@ -36,6 +44,13 @@ FF_BRANCH_EXPECTED_SURFACES = {
 
 def _safe_material_token(value: str) -> str:
     return _safe_label(value.replace("-", "m"))
+
+
+def _catalog_token(value: str | None) -> str | None:
+    if not value:
+        return None
+    name = Path(value).stem if value.lower().endswith(".agf") else value
+    return name.strip()
 
 
 def _unique_run_dir(project_root: Path, label: str, material: str) -> tuple[str, Path]:
@@ -181,6 +196,249 @@ def _validate_ff_branch_or_raise(oss: Any, context: str) -> None:
         raise RuntimeError(f"{context} does not match the expected FF branch baseline:\n{details}")
 
 
+def _missing_glass_in_status(status: Any, material: str) -> bool:
+    text = str(status or "").lower()
+    material_lower = material.lower()
+    return (
+        material_lower in text
+        and (
+            "找不到玻璃" in text
+            or "not found" in text
+            or "cannot find" in text
+            or "could not find" in text
+            or "missing" in text
+        )
+    )
+
+
+def _zemax_glasscat_dir() -> Path:
+    return Path(os.environ.get("ZEMAX_GLASSCAT_DIR", r"C:\ProgramData\Zemax\Glasscat"))
+
+
+def _ensure_catalog_file_available(
+    catalog_name: str | None,
+    catalog_path: Path | None,
+) -> dict[str, Any]:
+    status: dict[str, Any] = {
+        "glass_catalog_name": catalog_name,
+        "glass_catalog_path": str(catalog_path) if catalog_path else None,
+        "glass_catalog_target_path": None,
+        "glass_catalog_file_available": None,
+        "glass_catalog_file_copied": False,
+        "glass_catalog_file_error": None,
+    }
+    if not catalog_name and catalog_path is not None:
+        catalog_name = catalog_path.stem
+        status["glass_catalog_name"] = catalog_name
+    if not catalog_name:
+        return status
+
+    target_path = _zemax_glasscat_dir() / f"{catalog_name}.AGF"
+    status["glass_catalog_target_path"] = str(target_path)
+
+    try:
+        if catalog_path is not None:
+            if not catalog_path.exists():
+                raise FileNotFoundError(f"Glass catalog path not found: {catalog_path}")
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            should_copy = (
+                not target_path.exists()
+                or target_path.stat().st_size != catalog_path.stat().st_size
+                or int(target_path.stat().st_mtime) < int(catalog_path.stat().st_mtime)
+            )
+            if should_copy:
+                shutil.copy2(catalog_path, target_path)
+                status["glass_catalog_file_copied"] = True
+
+        status["glass_catalog_file_available"] = target_path.exists()
+    except Exception as exc:
+        status["glass_catalog_file_available"] = False
+        status["glass_catalog_file_error"] = f"{type(exc).__name__}: {exc!r}"
+
+    return status
+
+
+def _catalogs_object(oss: Any) -> Any:
+    return safe_get(safe_get(oss, "SystemData"), "MaterialCatalogs")
+
+
+def _call_catalog_method(catalogs: Any, method_names: tuple[str, ...], *args: Any) -> tuple[bool, str | None]:
+    if catalogs is None:
+        return False, "MaterialCatalogs object is not available."
+    errors: list[str] = []
+    for method_name in method_names:
+        method = safe_get(catalogs, method_name)
+        if not callable(method):
+            continue
+        try:
+            method(*args)
+            return True, None
+        except Exception as exc:
+            errors.append(f"{method_name}: {type(exc).__name__}: {exc!r}")
+    return False, " | ".join(errors) if errors else f"No callable methods found among {method_names}."
+
+
+def _catalog_names(oss: Any) -> list[str]:
+    catalogs = _catalogs_object(oss)
+    if catalogs is None:
+        return []
+
+    names: list[str] = []
+    direct = safe_get(catalogs, "Catalogs")
+    if isinstance(direct, str):
+        names.extend(item.strip() for item in direct.replace(";", ",").split(",") if item.strip())
+
+    count = safe_get(catalogs, "NumberOfCatalogs") or safe_get(catalogs, "Count") or safe_get(catalogs, "Length")
+    try:
+        total = int(count)
+    except (TypeError, ValueError):
+        total = 0
+
+    for index in list(range(total)) + list(range(1, total + 1)):
+        for method_name in ("GetCatalog", "GetCatalogAt", "GetCatalogName", "GetCatalogNameAt"):
+            method = safe_get(catalogs, method_name)
+            if not callable(method):
+                continue
+            try:
+                value = method(index)
+            except Exception:
+                continue
+            if value is not None:
+                names.append(str(value))
+
+    normalized: list[str] = []
+    for name in names:
+        token = _catalog_token(name)
+        if token and token.upper() not in {item.upper() for item in normalized}:
+            normalized.append(token)
+    return normalized
+
+
+def _ensure_catalog_bound_to_lens(
+    oss: Any,
+    catalog_name: str | None,
+    catalog_path: Path | None,
+    run_dir: Path | None = None,
+    run_id: str | None = None,
+) -> dict[str, Any]:
+    file_status = _ensure_catalog_file_available(catalog_name, catalog_path)
+    catalog_name = _catalog_token(file_status.get("glass_catalog_name"))
+    status: dict[str, Any] = {
+        **file_status,
+        "glass_catalogs_before": _catalog_names(oss),
+        "glass_catalog_bind_attempted": bool(catalog_name),
+        "glass_catalog_bind_succeeded": False,
+        "glass_catalog_bind_error": None,
+        "glass_catalogs_after": [],
+    }
+    if not catalog_name:
+        status["glass_catalogs_after"] = status["glass_catalogs_before"]
+        if run_dir is not None:
+            update_analysis_debug(run_dir, run_id, status)
+        return status
+
+    before_upper = {name.upper() for name in status["glass_catalogs_before"]}
+    if catalog_name.upper() in before_upper:
+        status["glass_catalog_bind_succeeded"] = True
+        status["glass_catalogs_after"] = status["glass_catalogs_before"]
+        if run_dir is not None:
+            update_analysis_debug(run_dir, run_id, status)
+        return status
+
+    catalogs = _catalogs_object(oss)
+    ok, error = _call_catalog_method(
+        catalogs,
+        (
+            "AddCatalog",
+            "AddCatalogByName",
+            "Add",
+            "InsertCatalog",
+            "AddMaterialCatalog",
+            "AddGlassCatalog",
+        ),
+        catalog_name,
+    )
+    if not ok and catalog_path is not None:
+        ok, path_error = _call_catalog_method(
+            catalogs,
+            (
+                "AddCatalog",
+                "AddCatalogByName",
+                "Add",
+                "InsertCatalog",
+                "AddMaterialCatalog",
+                "AddGlassCatalog",
+            ),
+            str(catalog_path),
+        )
+        error = f"{error} | path attempt: {path_error}"
+
+    try:
+        oss.update_status()
+    except Exception:
+        pass
+
+    status["glass_catalogs_after"] = _catalog_names(oss)
+    after_upper = {name.upper() for name in status["glass_catalogs_after"]}
+    status["glass_catalog_bind_succeeded"] = ok or catalog_name.upper() in after_upper
+    status["glass_catalog_bind_error"] = None if status["glass_catalog_bind_succeeded"] else error
+
+    if run_dir is not None:
+        update_analysis_debug(run_dir, run_id, status)
+    return status
+
+
+def _reopen_lens_for_analysis(
+    oss: Any,
+    lens_path: Path,
+    run_dir: Path,
+    run_id: str,
+    glass_catalog_name: str | None = None,
+    glass_catalog_path: Path | None = None,
+) -> None:
+    debug: dict[str, Any] = {
+        "scan_lens_saved": lens_path.exists(),
+        "scan_lens_reopen_attempted": True,
+        "scan_lens_close_attempted": True,
+        "scan_lens_close_succeeded": False,
+        "scan_lens_new_before_reload_succeeded": False,
+        "scan_lens_reopened": False,
+        "lens_update_succeeded": False,
+        "lens_update_status": None,
+        "scan_lens_reopen_error": None,
+    }
+    try:
+        try:
+            debug["scan_lens_close_succeeded"] = bool(oss.close(saveifneeded=False))
+        except Exception as exc:
+            debug["scan_lens_reopen_error"] = f"close current lens failed/nonfatal: {type(exc).__name__}: {exc!r}"
+
+        try:
+            oss.new(saveifneeded=False)
+            debug["scan_lens_new_before_reload_succeeded"] = True
+        except Exception as exc:
+            message = f"new before reload failed/nonfatal: {type(exc).__name__}: {exc!r}"
+            debug["scan_lens_reopen_error"] = (
+                message
+                if debug["scan_lens_reopen_error"] is None
+                else f"{debug['scan_lens_reopen_error']} | {message}"
+            )
+
+        oss.load(lens_path, saveifneeded=False)
+        debug["scan_lens_reopened"] = True
+        _ensure_catalog_bound_to_lens(oss, glass_catalog_name, glass_catalog_path, run_dir, run_id)
+        status = None
+        for _ in range(3):
+            status = oss.update_status()
+        debug["lens_update_succeeded"] = True
+        debug["lens_update_status"] = status
+    except Exception as exc:
+        debug["scan_lens_reopen_error"] = f"reopen scan lens failed: {type(exc).__name__}: {exc!r}"
+        raise
+    finally:
+        update_analysis_debug(run_dir, run_id, debug)
+
+
 def _resolve_values(values: list[str] | None, allowed: dict[str, dict[str, str]]) -> list[str]:
     if values:
         missing = [value for value in values if value.upper() not in allowed]
@@ -267,6 +525,54 @@ def _material_validation(
     }
 
 
+def _export_failed_material_point(
+    oss: Any,
+    run_id: str,
+    run_dir: Path,
+    extra_metadata: dict[str, Any],
+    failure_reason: str,
+) -> None:
+    run_dir.mkdir(parents=True, exist_ok=True)
+    export_time = datetime.now().isoformat(timespec="seconds")
+    _append_warning(run_dir, run_id, failure_reason)
+
+    metadata_path = run_file(run_dir, run_id, "run_metadata")
+    metadata = export_run_metadata(
+        oss,
+        metadata_path,
+        run_id,
+        export_time,
+        output_folder=run_dir,
+        extra={**extra_metadata, "failure_reason": failure_reason},
+    )
+    metadata = load_run_metadata(metadata_path)
+    print("Exported:", metadata_path, flush=True)
+
+    surfaces: list[dict[str, Any]] = []
+    try:
+        surfaces_path = run_file(run_dir, run_id, "surfaces")
+        surfaces = export_surfaces(oss, surfaces_path, run_metadata=metadata)
+        print("Exported:", surfaces_path, flush=True)
+    except Exception as exc:
+        _append_warning(run_dir, run_id, f"Failed to export surfaces.csv after material failure: {repr(exc)}")
+
+    try:
+        manufacturing_path = run_file(run_dir, run_id, "manufacturing_check")
+        export_manufacturing_check(surfaces, manufacturing_path, run_metadata=metadata)
+        print("Exported:", manufacturing_path, flush=True)
+    except Exception as exc:
+        _append_warning(run_dir, run_id, f"Failed to export manufacturing_check.json after material failure: {repr(exc)}")
+
+    try:
+        summary_path = run_file(run_dir, run_id, "summary_for_chatgpt")
+        export_chatgpt_summary(run_dir, run_id, summary_path)
+        print("Exported:", summary_path, flush=True)
+    except Exception as exc:
+        _append_warning(run_dir, run_id, f"Failed to export summary_for_chatgpt.txt after material failure: {repr(exc)}")
+
+    print_run_console_summary(run_dir, run_id)
+
+
 def scan_material(
     project_root: Path,
     base_lens: Path,
@@ -276,6 +582,8 @@ def scan_material(
     surface: int | None = None,
     surface_comment: str | None = None,
     quick_focus: bool = False,
+    glass_catalog_name: str | None = None,
+    glass_catalog_path: Path | None = None,
 ) -> None:
     if not base_lens.exists():
         raise FileNotFoundError(f"Base lens not found: {base_lens}")
@@ -291,6 +599,7 @@ def scan_material(
 
     try:
         oss.load(base_lens, saveifneeded=False)
+        _ensure_catalog_bound_to_lens(oss, glass_catalog_name, glass_catalog_path)
         resolved_surface_number = resolve_surface_number(oss, surface, surface_comment)
         resolved_surface = _surface_at(oss, resolved_surface_number)
         resolved_surface_comment = str(safe_get(resolved_surface, "Comment") or "")
@@ -313,18 +622,24 @@ def scan_material(
     try:
         for material in materials:
             material_info = allowed[material.upper()]
-            oss.load(base_lens, saveifneeded=False)
+            catalog_name = glass_catalog_name or material_info.get("catalog_name")
+            catalog_path = glass_catalog_path
+            run_id, run_dir = _unique_run_dir(project_root, label, material)
+            copy_path = scan_dir / f"{run_id}.zos"
+            shutil.copy2(base_lens, copy_path)
+            print(f"Copied base lens to scan copy: {copy_path}", flush=True)
+
+            oss.load(copy_path, saveifneeded=False)
+            _ensure_catalog_bound_to_lens(oss, catalog_name, catalog_path, run_dir, run_id)
             target_surface = _surface_at(oss, resolved_surface_number)
             target_comment = str(safe_get(target_surface, "Comment") or "")
             if target_comment.strip().upper() == "FF_FRONT":
-                _validate_ff_branch_or_raise(oss, str(base_lens))
+                _validate_ff_branch_or_raise(oss, str(copy_path))
             _set_material(target_surface, material)
             oss.update_status()
             material_validation = _material_validation(oss, resolved_surface_number, material, material_info)
 
-            run_id, run_dir = _unique_run_dir(project_root, label, material)
-            copy_path = scan_dir / f"{run_id}.zos"
-            oss.save_as(copy_path)
+            oss.save()
             print(f"Saved scan copy: {copy_path}", flush=True)
             update_analysis_debug(
                 run_dir,
@@ -384,6 +699,34 @@ def scan_material(
                     },
                 )
 
+            _reopen_lens_for_analysis(oss, copy_path, run_dir, run_id, catalog_name, catalog_path)
+            material_validation = _material_validation(oss, resolved_surface_number, material, material_info)
+            lens_update_status = None
+            try:
+                lens_update_status = oss.update_status()
+            except Exception as exc:
+                lens_update_status = f"UpdateStatus failed: {type(exc).__name__}: {exc!r}"
+            current_material_after_reopen = str(
+                safe_get(_surface_at(oss, resolved_surface_number), "Material") or ""
+            ).strip()
+            catalog_not_available_after_reopen = _missing_glass_in_status(lens_update_status, material)
+            update_analysis_debug(
+                run_dir,
+                run_id,
+                {
+                    "material_set_success": material_validation.get("material_set_success"),
+                    "actual_glass_name_after_set": material_validation.get("actual_glass_name_after_set"),
+                    "actual_nd": material_validation.get("actual_nd_if_available"),
+                    "actual_vd": material_validation.get("actual_vd_if_available"),
+                    "material_validation_warning": material_validation.get("material_validation_warning"),
+                    "material_validation_error": material_validation.get("material_validation_error"),
+                    "material_after_reopen": current_material_after_reopen,
+                    "catalog_not_available_after_reopen": catalog_not_available_after_reopen,
+                    "missing_glass": material if catalog_not_available_after_reopen else None,
+                    "missing_catalog": catalog_name if catalog_not_available_after_reopen else None,
+                },
+            )
+
             extra_metadata = {
                 "label": label,
                 "scanned_parameter": "Material",
@@ -391,6 +734,8 @@ def scan_material(
                 "scanned_surface_comment": target_comment or resolved_surface_comment,
                 "scanned_material": material,
                 "material_catalog": material_info.get("catalog_name"),
+                "requested_glass_catalog_name": catalog_name,
+                "requested_glass_catalog_path": str(catalog_path) if catalog_path else None,
                 "material_nd": material_info.get("nd"),
                 "material_vd": material_info.get("vd"),
                 **material_validation,
@@ -400,6 +745,15 @@ def scan_material(
                 "scan_lens": str(copy_path),
                 "scan_copy_file": str(copy_path),
             }
+            if catalog_not_available_after_reopen:
+                failure_reason = (
+                    "catalog_not_available_after_reopen: true; "
+                    f"missing_glass: {material}; missing_catalog: {catalog_name}; "
+                    f"lens_update_status: {lens_update_status}"
+                )
+                _export_failed_material_point(oss, run_id, run_dir, extra_metadata, failure_reason)
+                continue
+
             _export_current_point(oss, run_id, run_dir, extra_metadata)
 
         summarize_results(project_root)
@@ -420,6 +774,8 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--allowed-materials-csv", required=True, type=Path, help="Allowed material whitelist CSV.")
     parser.add_argument("--values", nargs="+", help="Material names to scan. Defaults to all rows in CSV.")
     parser.add_argument("--quick-focus", action="store_true", help="Run OpticStudio Quick Focus after setting material.")
+    parser.add_argument("--glass-catalog-name", help="Glass catalog name to bind before setting material.")
+    parser.add_argument("--glass-catalog-path", type=Path, help="Path to the AGF catalog file to copy/bind.")
     parser.add_argument("--label", default="material_scan", help="Label used in run_id and scan copy names.")
     return parser.parse_args()
 
@@ -435,4 +791,6 @@ if __name__ == "__main__":
         surface=args.surface,
         surface_comment=args.surface_comment,
         quick_focus=args.quick_focus,
+        glass_catalog_name=args.glass_catalog_name,
+        glass_catalog_path=args.glass_catalog_path,
     )
