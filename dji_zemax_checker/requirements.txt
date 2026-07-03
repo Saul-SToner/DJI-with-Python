@@ -1,3 +1,11 @@
-zospy
-pandas
-numpy
+# =========================================================================
+# OpticStudio ZOS-API Dependency Note:
+# ZOS-API is NOT pip-installable. It requires a local licensed installation
+# of Zemax OpticStudio. The Python interface requires registering the
+# OpticStudio .NET DLLs via Pythonnet (which ZOSPy manages).
+# =========================================================================
+
+zospy>=0.8.0
+pandas>=1.5.0
+numpy>=1.20.0
+pyyaml>=6.0
