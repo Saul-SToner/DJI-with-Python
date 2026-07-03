@@ -1,5 +1,9 @@
 # DJI-with-Python
 
+> Disclaimer: This is an unofficial personal learning and research archive. It is not affiliated with, endorsed by, or sponsored by DJI.
+>
+> 免责声明：本仓库为个人学习与研究归档项目，与 DJI / 大疆官方无隶属、授权、合作或背书关系。
+
 本仓库包含个人 Zemax 自动化与超广角镜头结构搜索工作流的归档。
 
 当前已整理的项目入口为：
