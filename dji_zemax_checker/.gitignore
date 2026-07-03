@@ -16,13 +16,18 @@ dist/
 *.log
 
 # Generated OpticStudio automation outputs
-results/**
-!results/
-!results/.gitkeep
-logs/**
-reports/**
-scan_runs/**
-stage_runs/**
+results/
+outputs/
+logs/
+temp/
+scan_runs/
+stage_runs/
+
+# Allow report and doc markdown files
+!reports/
+!reports/**/*.md
+!docs/
+!docs/**/*.md
 
 # Zemax / OpticStudio design, archive, and analysis files
 *.zos
@@ -33,6 +38,17 @@ stage_runs/**
 *.ZDA
 *.zar
 *.ZAR
+*.ses
+*.SES
+*.cfg
+*.CFG
+*.backup
+
+# Large compressed files
+*.zip
+*.tar.gz
+*.rar
+*.7z
 
 # Local competition/material-library exports
 allowed_materials*.csv
