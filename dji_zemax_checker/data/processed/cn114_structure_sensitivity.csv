@@ -1,0 +1,27 @@
+variant_id,base_version,changed_parameter,delta_value,TTL_mm,BFL_mm,image_height_mm,max_pass_field_deg,failure_field,failure_ray,failure_surface,failure_type,geometry_status,trace_status,notes
+BASE_V2,V2_dji_nearest,baseline,0.0,15.995000,1.923000,2.126815055233748,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+IMG_-0.20,V2_dji_nearest,image_plane_refocus,-0.2,15.795000,1.723000,2.0720776205578764,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+IMG_-0.10,V2_dji_nearest,image_plane_refocus,-0.1,15.895000,1.823000,2.099446337895812,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+IMG_-0.05,V2_dji_nearest,image_plane_refocus,-0.05,15.945000,1.873000,2.11313069656478,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+IMG_+0.05,V2_dji_nearest,image_plane_refocus,0.05,16.045000,1.973000,2.140499413902716,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+IMG_+0.10,V2_dji_nearest,image_plane_refocus,0.1,16.095000,2.023000,2.1541837725716837,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+IMG_+0.20,V2_dji_nearest,image_plane_refocus,0.2,16.195000,2.123000,2.1815524899096195,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+IMG_+0.40,V2_dji_nearest,image_plane_refocus,0.4,16.395000,2.323000,2.236289924585491,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L5L6_-0.10,V2_dji_nearest,rear_gap_L5_L6,-0.1,15.895000,1.923000,2.085377652641374,60.0,65.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L5L6_-0.05,V2_dji_nearest,rear_gap_L5_L6,-0.05,15.945000,1.923000,2.1060120415657018,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L5L6_-0.02,V2_dji_nearest,rear_gap_L5_L6,-0.02,15.975000,1.923000,2.1184733727437326,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L5L6_+0.02,V2_dji_nearest,rear_gap_L5_L6,0.02,16.015000,1.923000,2.135184321623277,50.0,55.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L5L6_+0.05,V2_dji_nearest,rear_gap_L5_L6,0.05,16.045000,1.923000,2.147790466821265,50.0,55.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L5L6_+0.10,V2_dji_nearest,rear_gap_L5_L6,0.1,16.095000,1.923000,2.1689420289458945,45.0,50.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L7PL_-0.10,V2_dji_nearest,rear_gap_L7_plate,-0.1,15.895000,1.923000,2.099446337895812,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L7PL_-0.05,V2_dji_nearest,rear_gap_L7_plate,-0.05,15.945000,1.923000,2.11313069656478,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L7PL_-0.02,V2_dji_nearest,rear_gap_L7_plate,-0.02,15.975000,1.923000,2.1213413117661606,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L7PL_+0.02,V2_dji_nearest,rear_gap_L7_plate,0.02,16.015000,1.923000,2.132288798701335,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L7PL_+0.05,V2_dji_nearest,rear_gap_L7_plate,0.05,16.045000,1.923000,2.140499413902716,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+L7PL_+0.10,V2_dji_nearest,rear_gap_L7_plate,0.1,16.095000,1.923000,2.1541837725716837,55.0,60.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+STOP_-0.05,V2_dji_nearest,stop_shift,-0.05,15.995000,1.923000,2.1270622703968973,45.0,50.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+STOP_-0.02,V2_dji_nearest,stop_shift,-0.02,15.995000,1.923000,2.1269142555719984,50.0,55.0,ep_py,VC10,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+STOP_+0.02,V2_dji_nearest,stop_shift,0.02,15.995000,1.923000,2.1267154654880382,60.0,65.0,ep_py;ep_my,VC10;VC8,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+STOP_+0.05,V2_dji_nearest,stop_shift,0.05,15.995000,1.923000,2.12656541095611,55.0,60.0,ep_my,VC8,vignetting,GATE1_PASS_GEOMETRY,PARTIAL,Fresh-load replay; no optimization
+SCALE_0.98,V2_dji_nearest,uniform_linear_scale,0.98,15.675100,1.884540,2.0781859915610106,55.0,60.0,ep_py,VC10,vignetting,GATE1_FAIL_GEOMETRY,PARTIAL,Fresh-load replay; no optimization; linear dimensions scaled without asphere coefficient rescaling; diagnostic only
+SCALE_1.02,V2_dji_nearest,uniform_linear_scale,1.02,16.314900,1.961460,2.175943970211707,50.0,55.0,ep_py,VC10,vignetting,GATE1_FAIL_GEOMETRY,PARTIAL,Fresh-load replay; no optimization; linear dimensions scaled without asphere coefficient rescaling; diagnostic only
