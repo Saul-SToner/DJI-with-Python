@@ -110,3 +110,14 @@ Classifies and filters designs for downstream machine learning datasets.
 | `usable_for_material_dataset` | Boolean| -| `True` if target catalog has compatible glasses for this layout. |
 | `usable_for_ml_training` | Boolean| -| `True` if both structure and materials are compatible for training. |
 | `notes` | String | - | Specific data cleaning exclusions or flags. |
+
+---
+
+## Schema Validation
+
+To ensure the CSV templates remain consistent with the definitions in this document, run the validation script from the project root:
+
+```powershell
+python scripts/check_material_transfer_schema.py
+```
+
