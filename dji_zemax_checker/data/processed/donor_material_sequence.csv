@@ -1,19 +1,43 @@
 donor_id,lens_id,surface_front,surface_back,native_material,native_nd,native_Vd,lens_power_sign,lens_role,position_role,dji_best_match,dji_nd,dji_Vd,nd_error,Vd_error,role_match_status,mapping_score,notes
-US7023628B1,L1,S1,S2,MODEL_ND_VD,1.910,35.47,P,front admission,front,,,,,,DEFERRED,,Native/model-glass vector retained; DJI substitution not run
-US7023628B1,L2,S3,S4,MODEL_ND_VD,1.816,46.61,P,front projection,front,,,,,,DEFERRED,,Native/model-glass vector retained; DJI substitution not run
-US7023628B1,L3,S5,S6,MODEL_ND_VD,1.917,21.51,N,pre-stop correction,front,,,,,,DEFERRED,,Native/model-glass vector retained; DJI substitution not run
-US7023628B1,L4,S8,S9,MODEL_ND_VD,1.603,60.70,P,post-stop relay,rear,,,,,,DEFERRED,,Material transfer eligible after native partial gate
-US7023628B1,L5,S9,S10,MODEL_ND_VD,1.805,25.43,N,cemented correction,rear,,,,,,DEFERRED,,Material transfer eligible after native partial gate
-US7023628B1,L6,S11,S12,MODEL_ND_VD,1.713,53.87,P,final relay,rear,,,,,,DEFERRED,,Material transfer eligible after native partial gate
-US7554753B2,L1,S1,S2,MODEL_ND_VD,1.5168,64.103,N,front admission,front,,,,,,DEFERRED,,Native TTL is 62.6 mm; transfer is analytical only
-US7554753B2,L2,S3,S4,MODEL_ND_VD,1.5168,64.103,N,front admission,front,,,,,,DEFERRED,,Native TTL is 62.6 mm; transfer is analytical only
-US7554753B2,L3a,S5,S6,MODEL_ND_VD,1.620409,60.140,P,front compound,front,,,,,,DEFERRED,,Native/model-glass vector retained
-US7554753B2,L3b,S6,S7,MODEL_ND_VD,1.6727,32.170,N,front compound correction,front,,,,,,DEFERRED,,Native/model-glass vector retained
-US8064149B2,L1,S1,S2,E-LASF05,1.8346,42.72,N,front admission,front,,,,,,DEFERRED,,Catalog identity retained; no DJI substitution
-US8064149B2,L2,S3,S4,E-LASF05,1.8346,42.72,N,front admission,front,,,,,,DEFERRED,,Catalog identity retained; no DJI substitution
-US8064149B2,L3,S5,S6,E-SF11,1.7845,25.68,P,pre-stop projection,front,,,,,,DEFERRED,,Catalog identity retained; no DJI substitution
-CN106154501A,L1,S1,S2,H-ZF7LA,1.910,35.3,N,front admission,front,,,,,,DEFERRED,,DJI mapping deferred until vector audit
-CN106154501A,L2,S3,S4,H-QK3L,1.595,67.7,P,front correction,front,,,,,,DEFERRED,,DJI mapping deferred until vector audit
-CN106154501A,L3,S5,S6,H-ZK9B,1.640,60.1,P,front projection,front,,,,,,DEFERRED,,DJI mapping deferred until vector audit
-CN106154501A,L4,S7,S8,H-ZK9A,1.620,60.4,P,pre-stop relay,middle,,,,,,DEFERRED,,Table thickness is unusually small and must be preserved in native replay
-CN114047597A,ALL,patent_table,patent_table,NATIVE_CATALOG_OR_MODEL_GLASS,,,MIXED,compact admission train,full system,,,,,,DEFERRED,,Emb1 enters material-vector analysis; no silent substitution performed
+US7023628B1,L1,S1,S2,MODEL_1.910000_35.470,1.910000,35.470000,positive,front_negative_high_index,front_group,TAFD33,1.881000,40.140000,0.029000,4.670000,COMPATIBLE,0.276500,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7023628B1,L2,S3,S4,MODEL_1.816000_46.610,1.816000,46.610000,positive,positive_crown,front_group,TAF5,1.816000,46.570000,0.000000,0.040000,INCOMPATIBLE,0.000000,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7023628B1,L3,S5,S6,MODEL_1.917000_21.510,1.917000,21.510000,weak,flint_color_correction,stop_near,E-FDS1,1.922860,20.880000,0.005860,0.630000,COMPATIBLE,0.709900,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7023628B1,L4,S8,S9,MODEL_1.729000_54.670,1.729000,54.670000,positive,rear_relay,rear_group,TAC8,1.729160,54.670000,0.000160,0.000000,UNCERTAIN,0.498400,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7023628B1,L5,S9,S10,MODEL_1.917000_21.510,1.917000,21.510000,negative,flint_color_correction,rear_group,E-FDS1,1.922860,20.880000,0.005860,0.630000,COMPATIBLE,0.709900,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7023628B1,L6,S11,S12,MODEL_1.640000_60.150,1.640000,60.150000,positive,rear_relay,rear_group,LACL60,1.640000,60.200000,0.000000,0.050000,UNCERTAIN,0.497500,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7023628B1,cover,S13,S14,MODEL_1.516000_64.170,1.516000,64.170000,weak,cover_or_filter,cover,D-K9,1.516330,64.058952,0.000330,0.111048,UNCERTAIN,0.491148,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7554753B2,L1,S1,S2,MODEL_1.516800_64.103,1.516800,64.103000,negative,front_negative_high_index,front_group,H-K9LA,1.516800,64.198695,0.000000,0.095695,INCOMPATIBLE,0.000000,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7554753B2,L2,S3,S4,MODEL_1.516800_64.103,1.516800,64.103000,negative,front_negative_high_index,front_group,H-K9LA,1.516800,64.198695,0.000000,0.095695,INCOMPATIBLE,0.000000,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7554753B2,L3a,S5,S6,MODEL_1.620409_60.140,1.620409,60.140000,positive,positive_crown,front_group,H-ZK9B,1.620410,60.339343,0.000001,0.199343,COMPATIBLE,0.790023,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7554753B2,L3b,S6,S7,MODEL_1.672700_32.170,1.672700,32.170000,negative,flint_color_correction,stop_near,E-FD5,1.672700,32.170000,0.000000,0.000000,COMPATIBLE,0.800000,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7554753B2,L4,S9,S10,MODEL_1.603001_65.416,1.603001,65.416000,positive,rear_relay,rear_group,H-ZPK2A,1.603001,65.459620,0.000000,0.043620,UNCERTAIN,0.497819,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7554753B2,L5a,S11,S12,MODEL_1.744000_45.001,1.744000,45.001000,positive,rear_relay,rear_group,H-LAF3B,1.744000,44.900027,0.000000,0.100973,UNCERTAIN,0.494951,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7554753B2,L5b,S12,S13,MODEL_1.755200_27.613,1.755200,27.613000,negative,flint_color_correction,rear_group,ZF6,1.755205,27.546239,0.000005,0.066761,COMPATIBLE,0.796612,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7554753B2,L5c,S13,S14,MODEL_1.603110_60.645,1.603110,60.645000,positive,rear_relay,rear_group,H-ZK14,1.603110,60.603787,0.000000,0.041213,UNCERTAIN,0.497939,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7554753B2,L6,S15,S16,MODEL_1.516800_64.103,1.516800,64.103000,positive,positive_crown,rear_group,H-K9LA,1.516800,64.198695,0.000000,0.095695,COMPATIBLE,0.795215,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US7554753B2,filter,S17,S18,MODEL_1.516800_64.103,1.516800,64.103000,weak,cover_or_filter,cover,H-K9LA,1.516800,64.198695,0.000000,0.095695,UNCERTAIN,0.495215,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US8064149B2,L1,S1,S2,E-LASF05,1.834600,42.720000,negative,front_negative_high_index,front_group,TAFD5F,1.834810,42.720000,0.000210,0.000000,COMPATIBLE,0.997900,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US8064149B2,L2,S3,S4,E-LASF05,1.834600,42.720000,negative,front_negative_high_index,front_group,TAFD5F,1.834810,42.720000,0.000210,0.000000,COMPATIBLE,0.997900,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US8064149B2,L3,S5,S6,E-SF11,1.784500,25.680000,positive,flint_color_correction,stop_near,FD110,1.784720,25.720000,0.000220,0.040000,COMPATIBLE,0.995800,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US8064149B2,L4,S8,S9,E-LF5,1.581300,40.740000,positive,rear_relay,rear_group,H-QF50A,1.581440,40.746424,0.000140,0.006424,UNCERTAIN,0.698279,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US8064149B2,L5,S10,S11,E-SF6,1.804900,25.430000,negative,flint_color_correction,rear_group,H-ZF7LA,1.805180,25.456256,0.000280,0.026256,COMPATIBLE,0.995887,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US8064149B2,L6,S12,S13,E-PSK02,1.617900,63.370000,positive,positive_crown,rear_group,H-ZPK1A,1.618000,63.392702,0.000100,0.022702,COMPATIBLE,0.997865,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US8064149B2,L7,S14,S15,E-PSK02,1.617900,63.370000,positive,positive_crown,rear_group,H-ZPK1A,1.618000,63.392702,0.000100,0.022702,COMPATIBLE,0.997865,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+US8064149B2,filter,S16,S17,E-BK7,1.516700,64.100000,weak,cover_or_filter,cover,D-K9,1.516330,64.058952,0.000370,0.041048,UNCERTAIN,0.694248,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN106154501A,L1,S1,S2,H-ZF7LA,1.910000,35.300000,negative,front_negative_high_index,front_group,TAFD33,1.881000,40.140000,0.029000,4.840000,COMPATIBLE,0.468000,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN106154501A,L2,S3,S4,H-QK3L,1.595000,67.700000,positive,positive_crown,front_group,D-ZPK3,1.594190,67.295385,0.000810,0.404615,COMPATIBLE,0.971669,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN106154501A,L3,S5,S6,H-ZK9B,1.640000,60.100000,positive,positive_crown,front_group,LACL60,1.640000,60.200000,0.000000,0.100000,COMPATIBLE,0.995000,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN106154501A,L4,S7,S8,H-ZK9A,1.620000,60.400000,positive,positive_crown,stop_near,H-ZK9A,1.620412,60.368242,0.000412,0.031758,COMPATIBLE,0.994292,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN106154501A,L5,S9,S10,H-ZBAF52A,1.700000,48.000000,positive,rear_relay,rear_group,H-LAF51,1.700000,48.079839,0.000000,0.079839,UNCERTAIN,0.696008,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN106154501A,L6a,S11,S12,H-ZBAF52A,1.700000,48.000000,negative,flint_color_correction,rear_group,H-ZBAF21,1.723410,37.991564,0.023410,10.008436,COMPATIBLE,0.265478,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN106154501A,L6b,S12,S13,H-ZF7LA,1.910000,35.300000,positive,rear_relay,rear_group,H-ZLAF4LB,1.910820,35.282389,0.000820,0.017611,UNCERTAIN,0.690919,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN106154501A,L8,S14,unknown,H-K9L,1.510000,64.100000,unknown,unknown,unknown,H-K5,1.510072,63.364525,0.000072,0.735475,UNCERTAIN,0.662506,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN106154501A,L9,S16,unknown,H-K9L,1.510000,64.100000,unknown,unknown,unknown,H-K5,1.510072,63.364525,0.000072,0.735475,UNCERTAIN,0.662506,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN114047597A,L1,S1,S2,MODEL_1.910000_37.000,1.910000,37.000000,unknown,front_negative_high_index,front_group,TAFD33,1.881000,40.140000,0.029000,3.140000,COMPATIBLE,0.353000,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN114047597A,L2,S3,S4,MODEL_1.540000_55.700,1.540000,55.700000,unknown,positive_crown,front_group,T62R,1.536497,55.980688,0.003503,0.280688,COMPATIBLE,0.750936,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN114047597A,L3,S5,S6,MODEL_1.670000_20.400,1.670000,20.400000,unknown,flint_color_correction,front_group,EP9000,1.671385,19.275802,0.001385,1.124198,COMPATIBLE,0.729940,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN114047597A,L4,S7,S8,MODEL_1.670000_20.400,1.670000,20.400000,unknown,flint_color_correction,stop_near,EP9000,1.671385,19.275802,0.001385,1.124198,COMPATIBLE,0.729940,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN114047597A,L5,S10,S11,MODEL_1.500000_81.600,1.500000,81.600000,unknown,positive_crown,rear_group,D-FK61A,1.497000,81.605419,0.003000,0.005419,COMPATIBLE,0.769729,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN114047597A,L6,S12,S13,MODEL_1.670000_20.400,1.670000,20.400000,unknown,flint_color_correction,rear_group,EP9000,1.671385,19.275802,0.001385,1.124198,COMPATIBLE,0.729940,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN114047597A,L7,S13,S14,MODEL_1.540000_55.700,1.540000,55.700000,unknown,rear_relay,rear_group,T62R,1.536497,55.980688,0.003503,0.280688,UNCERTAIN,0.450936,DJI_LIBRARY_INCOMPLETE; no material substitution executed
+CN114047597A,plate,S15,S16,MODEL_1.520000_64.200,1.520000,64.200000,weak,cover_or_filter,cover,BSC7,1.516800,64.200000,0.003200,0.000000,UNCERTAIN,0.468000,DJI_LIBRARY_INCOMPLETE; no material substitution executed
