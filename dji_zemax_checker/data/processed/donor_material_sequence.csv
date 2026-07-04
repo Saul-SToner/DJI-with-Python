@@ -1,0 +1,19 @@
+donor_id,lens_id,surface_front,surface_back,native_material,native_nd,native_Vd,lens_power_sign,lens_role,position_role,dji_best_match,dji_nd,dji_Vd,nd_error,Vd_error,role_match_status,mapping_score,notes
+US7023628B1,L1,S1,S2,MODEL_ND_VD,1.910,35.47,P,front admission,front,,,,,,DEFERRED,,Native/model-glass vector retained; DJI substitution not run
+US7023628B1,L2,S3,S4,MODEL_ND_VD,1.816,46.61,P,front projection,front,,,,,,DEFERRED,,Native/model-glass vector retained; DJI substitution not run
+US7023628B1,L3,S5,S6,MODEL_ND_VD,1.917,21.51,N,pre-stop correction,front,,,,,,DEFERRED,,Native/model-glass vector retained; DJI substitution not run
+US7023628B1,L4,S8,S9,MODEL_ND_VD,1.603,60.70,P,post-stop relay,rear,,,,,,DEFERRED,,Material transfer eligible after native partial gate
+US7023628B1,L5,S9,S10,MODEL_ND_VD,1.805,25.43,N,cemented correction,rear,,,,,,DEFERRED,,Material transfer eligible after native partial gate
+US7023628B1,L6,S11,S12,MODEL_ND_VD,1.713,53.87,P,final relay,rear,,,,,,DEFERRED,,Material transfer eligible after native partial gate
+US7554753B2,L1,S1,S2,MODEL_ND_VD,1.5168,64.103,N,front admission,front,,,,,,DEFERRED,,Native TTL is 62.6 mm; transfer is analytical only
+US7554753B2,L2,S3,S4,MODEL_ND_VD,1.5168,64.103,N,front admission,front,,,,,,DEFERRED,,Native TTL is 62.6 mm; transfer is analytical only
+US7554753B2,L3a,S5,S6,MODEL_ND_VD,1.620409,60.140,P,front compound,front,,,,,,DEFERRED,,Native/model-glass vector retained
+US7554753B2,L3b,S6,S7,MODEL_ND_VD,1.6727,32.170,N,front compound correction,front,,,,,,DEFERRED,,Native/model-glass vector retained
+US8064149B2,L1,S1,S2,E-LASF05,1.8346,42.72,N,front admission,front,,,,,,DEFERRED,,Catalog identity retained; no DJI substitution
+US8064149B2,L2,S3,S4,E-LASF05,1.8346,42.72,N,front admission,front,,,,,,DEFERRED,,Catalog identity retained; no DJI substitution
+US8064149B2,L3,S5,S6,E-SF11,1.7845,25.68,P,pre-stop projection,front,,,,,,DEFERRED,,Catalog identity retained; no DJI substitution
+CN106154501A,L1,S1,S2,H-ZF7LA,1.910,35.3,N,front admission,front,,,,,,DEFERRED,,DJI mapping deferred until vector audit
+CN106154501A,L2,S3,S4,H-QK3L,1.595,67.7,P,front correction,front,,,,,,DEFERRED,,DJI mapping deferred until vector audit
+CN106154501A,L3,S5,S6,H-ZK9B,1.640,60.1,P,front projection,front,,,,,,DEFERRED,,DJI mapping deferred until vector audit
+CN106154501A,L4,S7,S8,H-ZK9A,1.620,60.4,P,pre-stop relay,middle,,,,,,DEFERRED,,Table thickness is unusually small and must be preserved in native replay
+CN114047597A,ALL,patent_table,patent_table,NATIVE_CATALOG_OR_MODEL_GLASS,,,MIXED,compact admission train,full system,,,,,,DEFERRED,,Emb1 enters material-vector analysis; no silent substitution performed

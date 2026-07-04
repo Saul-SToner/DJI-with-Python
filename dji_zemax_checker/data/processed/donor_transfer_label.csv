@@ -1,0 +1,11 @@
+donor_id,native_status,model_glass_status,dji_transfer_status,dominant_failure_reason,usable_for_structure_dataset,usable_for_material_dataset,usable_for_ml_training,notes
+US7023628B1,NATIVE_PARTIAL,V1_PENDING,NOT_RUN,HIGH_FIELD_TRACE_AND_MISSING_APERTURES,YES,YES_WITH_CAUTION,YES_LABELED_PARTIAL,"Use full-system and rear-relay labels; not checkpoint evidence."
+US7554753B2,NATIVE_PARTIAL,V1_PENDING,NOT_RUN,NATIVE_TTL_SCALE_MISMATCH,YES,YES_WITH_CAUTION,YES_LABELED_PARTIAL,"Useful distributed relay morphology; not a compact direct donor."
+US8064149B2,NATIVE_PARTIAL,V1_PENDING,NOT_RUN,HIGH_FIELD_NATIVE_TRACE_FAIL,YES,YES_WITH_CAUTION,YES_LABELED_PARTIAL,"Low-field reproduction only."
+US20200081231A1,NATIVE_TRACE_FAIL,V1_BLOCKED,BLOCKED,NATIVE_TRACE_NOT_REPRODUCED,YES,NO,YES_NEGATIVE_LABEL,"Asphere write/readback alone is insufficient."
+US8638507B2,NATIVE_INCOMPLETE,V1_BLOCKED,BLOCKED,DERIVED_IMAGE_GAP_AND_INCOMPLETE_ASPHERE,YES,NO,NO,"Retain as structural reference until source assumptions close."
+CN106154501A,NATIVE_PARTIAL,V1_PENDING,NOT_RUN,HIGH_FIELD_TRACE_AND_BFL_AMBIGUITY,YES,YES_WITH_CAUTION,YES_LABELED_PARTIAL,"Best compact spherical/model-glass transfer study candidate."
+WO2016069418A1,NATIVE_INCOMPLETE,V1_BLOCKED,BLOCKED,OCR_VALUES_NOT_PRIMARY_PDF_VERIFIED,YES,NO,NO,"Verify PDF rows before replay."
+US9091843B1,NATIVE_TRACE_FAIL,V1_BLOCKED,BLOCKED,FIELD_PUPIL_SETUP_UNRESOLVED,YES,NO,YES_NEGATIVE_LABEL,"Do not use diagnostic field-collapse variant as native recovery."
+US20090080093A1,NATIVE_TRACE_FAIL,V1_BLOCKED,BLOCKED,HIGH_FIELD_CHIEF_TRACE_FAIL,YES,NO,YES_NEGATIVE_LABEL,"Original prescription exists but native setup is not reproduced."
+CN114047597A,NATIVE_PASS,V1_PENDING,NOT_RUN,BFL_AND_IMAGE_SCALE_MISMATCH,YES,YES,YES_LABELED_PASS,"Emb1 is the strongest reproducible admission-gene donor; Emb3 remains geometry-failed and excluded."
