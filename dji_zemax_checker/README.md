@@ -67,6 +67,14 @@ pip install -r requirements.txt
 
 ---
 
+## v0.2 Research Direction: Donor-to-Target Material Transfer
+
+The next research direction is to separate optical structure feasibility from material-library compatibility. Public donor lenses will first be replayed in native or model-glass form, then converted into a material-vector representation and mapped to the target material library through nd/Vd and lens-role-aware matching.
+
+下一阶段不再直接强行将 Donor 替换为目标材料库，而是先复现原生 Donor，再进行材料抽象、材料向量映射和 fresh-load 验证，用于区分结构失败与材料迁移失败。
+
+---
+
 ## 仓库约束与安全策略
 
 - **二进制设计文件排除**：所有的 `.ZOS`, `.ZMX`, `.ZDA` 镜头原文件以及 session 临时配置均通过 `.gitignore` 严格排除，避免污染仓库。仅由 `zos_file_manifest.csv` 记录其相对路径与 SHA-256 哈希。
