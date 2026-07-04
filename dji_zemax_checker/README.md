@@ -7,6 +7,7 @@
 本仓库是一个**个人学习与研究的工作流归档**，记录了用于超广角镜头（W9A）结构搜索、自动重建、实光线追迹与评估的 ZOS-API 自动化脚本。
 
 - Donor-to-DJI material transfer v0 summary: [`reports/donor_transfer_v0_summary.md`](./reports/donor_transfer_v0_summary.md)
+- CN114 structure rebuild v0 report: [`reports/structure_rebuild_v0_report.md`](./reports/structure_rebuild_v0_report.md)
 
 ## 项目定位与重点
 

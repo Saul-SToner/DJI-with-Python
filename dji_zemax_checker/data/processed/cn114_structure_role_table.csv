@@ -1,0 +1,9 @@
+element_id,surface_front,surface_back,group_role,power_sign,material_role,position_role,likely_function,transfer_risk,notes
+L1,S1,S2,front_group,negative,high_index_flint,front_group,wide_angle_front_capture,HIGH,"Engineering hypothesis from surface power and position; preserve admission role rather than exact prescription."
+L2,S3,S4,front_group,negative,mid_index_crown,front_group,wide_angle_front_capture,HIGH,"Strong aspheric front-group partner; likely coupled to L1 and pupil mapping."
+L3,S5,S6,middle_correction_group,positive,high_dispersion_flint,middle_group,distortion_control,HIGH,"Function is an engineering hypothesis; also likely contributes aberration and field mapping correction."
+L4,S7,S8,stop_near_group,weak,high_dispersion_flint,stop_near,pupil_control,HIGH,"Near-STOP aspheric element; power sign is weak and its exact function is coupled to STOP placement."
+L5,S10,S11,rear_relay_group,positive,low_index_crown,stop_near,rear_relay,HIGH,"First post-STOP positive element; sensitivity study shows L5-L6 spacing affects high-field trace."
+L6,S12,S13,middle_correction_group,negative,high_dispersion_flint,rear_group,field_curvature_control,HIGH,"Cemented interface with L7; function and sign are inferred from local surface powers."
+L7,S13,S14,rear_relay_group,positive,mid_index_crown,rear_group,BFL_control,HIGH,"Final powered element before plate; spacing changes image height weakly but do not solve scale."
+plate,S15,S16,cover_or_filter,weak,crown_like_plate,cover,unknown,MEDIUM,"Equivalent plate/filter region; optical function beyond cover/filter is not established."
