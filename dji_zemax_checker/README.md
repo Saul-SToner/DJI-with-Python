@@ -9,6 +9,7 @@
 - Donor-to-DJI material transfer v0 summary: [`reports/donor_transfer_v0_summary.md`](./reports/donor_transfer_v0_summary.md)
 - CN114 structure rebuild v0 report: [`reports/structure_rebuild_v0_report.md`](./reports/structure_rebuild_v0_report.md)
 - Limited structure rebuild v1 report: [`reports/limited_structure_rebuild_v1_report.md`](./reports/limited_structure_rebuild_v1_report.md)
+- Projection power reallocation v2 report: [`reports/projection_power_reallocation_v2_report.md`](./reports/projection_power_reallocation_v2_report.md)
 
 ## 项目定位与重点
 
